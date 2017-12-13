@@ -26,7 +26,10 @@
 #include <pcl/point_types.h>
 #include <pcl/filters/voxel_grid.h>
 #include <condition_variable>
+#include <octomap/octomap.h>
+#include <octomap/OcTree.h>
 
+using namespace octomap;
 using namespace ORB_SLAM2;
 
 class PointCloudMapping
@@ -43,7 +46,7 @@ public:
     void viewer();
     
 protected:
-    PointCloud::Ptr generatePointCloud(KeyFrame* kf, cv::Mat& color, cv::Mat& depth);
+    PointCloud::Ptr generatePointCloud(KeyFrame* kf, cv::Mat& color, cv::Mat& depth, OcTree* tree);
     
     PointCloud::Ptr globalMap;
     shared_ptr<thread>  viewerThread;   

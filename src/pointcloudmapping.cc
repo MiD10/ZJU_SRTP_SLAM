@@ -38,18 +38,14 @@ void PointCloudMapping::shutdown()
     std::cout << "Save point cloud file successfully!" << std::endl;
     {
         unique_lock<mutex> lck(shutDownMutex);
-	globalMap->clear();
-	for(size_t i = 0; i < keyframes.size(); i++)
-	{
+	OcTree tree (0.1);  // create empty tree with resolution 0.1
+	for(size_t i = 0; i < keyframes.size(); i++){
 	  std::cout << "keyframe " << i << "..." << std::endl;
-	  PointCloud::Ptr tp = generatePointCloud(keyframes[i],colorImgs[i],depthImgs[i]);
-	  *globalMap += *tp;
+	  PointCloud::Ptr tp = generatePointCloud(keyframes[i],colorImgs[i],depthImgs[i],&tree);
 	}
-	PointCloud::Ptr tmp(new PointCloud());
-	voxel.setInputCloud( globalMap );
-	voxel.filter( *tmp );
-	globalMap->swap( *tmp );
-	pcl::io::savePCDFileBinary( "optimized_pointcloud.pcd", *globalMap);
+	tree.writeBinary("simple_tree.bt");
+	std::cout << "wrote example file simple_tree.bt" << std::endl << std::endl;
+	std::cout << "now you can use octovis to visualize: octovis simple_tree.bt"  << std::endl;
         shutDownFlag = true;
         keyFrameUpdated.notify_one();
     }
@@ -67,19 +63,19 @@ void PointCloudMapping::insertKeyFrame(KeyFrame* kf, cv::Mat& color, cv::Mat& de
     keyFrameUpdated.notify_one();
 }
 
-pcl::PointCloud< PointCloudMapping::PointT >::Ptr PointCloudMapping::generatePointCloud(KeyFrame* kf, cv::Mat& color, cv::Mat& depth)
+pcl::PointCloud< PointCloudMapping::PointT >::Ptr PointCloudMapping::generatePointCloud(KeyFrame* kf, cv::Mat& color, cv::Mat& depth, OcTree* tree)
 {
-    PointCloud::Ptr tmp( new PointCloud() );
     // point cloud is null ptr
     int maxd = 0;
+    int size = 0;
     for ( int m=0; m<depth.rows; m+=3 )
     {
         for ( int n=0; n<depth.cols; n+=3 )
         {
             float d = depth.ptr<float>(m)[n];
 	    if(d > maxd) maxd = d;
-            if (d < 0.01 || d>1)
-                continue;
+            //if (d < 0.01 || d>1)
+            //    continue;
             PointT p;
             p.z = d;
             p.x = ( n - kf->cx) * p.z / kf->fx;
@@ -89,23 +85,18 @@ pcl::PointCloud< PointCloudMapping::PointT >::Ptr PointCloudMapping::generatePoi
             p.g = color.ptr<uchar>(m)[n*3+1];
             p.r = color.ptr<uchar>(m)[n*3+2];
                 
-            tmp->points.push_back(p);
+	    size++;
+	    
+            point3d endpoint (p.x, p.y, p.z);
+	    tree->updateNode(endpoint, true); // integrate 'occupied' measurement
         }
     }
-    
-    Eigen::Isometry3d T = ORB_SLAM2::Converter::toSE3Quat( kf->GetPose() );
-    PointCloud::Ptr cloud(new PointCloud);
-    pcl::transformPointCloud( *tmp, *cloud, T.inverse().matrix());
-    cloud->is_dense = false;
-    
-    cout<<"generate point cloud for kf "<<kf->mnId<<", size="<<cloud->points.size()<< " with maxd = " << maxd <<endl;
-    return cloud;
+    cout<<"generate point cloud for kf "<<kf->mnId<<", size="<< size << " with maxd = " << maxd <<endl;
 }
 
 
 void PointCloudMapping::viewer()
 {
-    pcl::visualization::CloudViewer viewer("viewer");
     while(1)
     {
         {
@@ -119,26 +110,6 @@ void PointCloudMapping::viewer()
             unique_lock<mutex> lck_keyframeUpdated( keyFrameUpdateMutex );
             keyFrameUpdated.wait( lck_keyframeUpdated );
         }
-        
-        // keyframe is updated 
-        size_t N=0;
-        {
-            unique_lock<mutex> lck( keyframeMutex );
-            N = keyframes.size();
-        }
-        
-        for ( size_t i=lastKeyframeSize; i<N ; i++ )
-        {
-            PointCloud::Ptr p = generatePointCloud( keyframes[i], colorImgs[i], depthImgs[i] );
-            *globalMap += *p;
-        }
-        PointCloud::Ptr tmp(new PointCloud());
-        voxel.setInputCloud( globalMap );
-        voxel.filter( *tmp );
-        globalMap->swap( *tmp );
-        viewer.showCloud( globalMap );
-        cout<<"show global map, size="<<globalMap->points.size()<<endl;
-        lastKeyframeSize = N;
     }
 }
 
