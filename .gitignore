@@ -5,3 +5,6 @@ build/
 /Examples/RGB-D/associations/
 *.pcd
 *.tgz
+*.cmake
+*.log
+cmake-build-debug/

@@ -27,90 +27,74 @@
 PointCloudMapping::PointCloudMapping(double resolution_)
 {
     this->resolution = resolution_;
-    voxel.setLeafSize( resolution, resolution, resolution);
-    globalMap = boost::make_shared< PointCloud >( );
-    
-    viewerThread = make_shared<thread>( bind(&PointCloudMapping::viewer, this ) );
+    voxel.setLeafSize(resolution, resolution, resolution);
+    globalMap = boost::make_shared<PointCloud>();
+
+    // viewerThread = make_shared<thread>(bind(&PointCloudMapping::viewer, this));
 }
 
 void PointCloudMapping::shutdown()
 {
     std::cout << "Save point cloud file successfully!" << std::endl;
     {
-        unique_lock<mutex> lck(shutDownMutex);
-	OcTree tree (0.1);  // create empty tree with resolution 0.1
-	for(size_t i = 0; i < keyframes.size(); i++){
-	  std::cout << "keyframe " << i << "..." << std::endl;
-	  PointCloud::Ptr tp = generatePointCloud(keyframes[i],colorImgs[i],depthImgs[i],&tree);
-	}
-	tree.updateInnerOccupancy();
-	tree.writeBinary("simple_tree.bt");
-	std::cout << "wrote example file simple_tree.bt" << std::endl << std::endl;
-	std::cout << "now you can use octovis to visualize: octovis simple_tree.bt"  << std::endl;
+        unique_lock <mutex> lck(shutDownMutex);
+        OcTree tree(0.1);  // create empty tree with resolution 0.1
+        for (size_t i = 0; i < keyframes.size(); i++)
+        {
+            std::cout << "keyframe " << i << "..." << std::endl;
+            generatePointCloud(keyframes[i], colorImgs[i], depthImgs[i], &tree);
+            tree.updateInnerOccupancy();
+        }
+        tree.writeBinary("simple_tree.bt");
+        std::cout << "wrote example file simple_tree.bt" << std::endl << std::endl;
+        std::cout << "now you can use octovis to visualize: octovis simple_tree.bt" << std::endl;
         shutDownFlag = true;
         keyFrameUpdated.notify_one();
     }
-    viewerThread->join();
+    // viewerThread->join();
 }
 
-void PointCloudMapping::insertKeyFrame(KeyFrame* kf, cv::Mat& color, cv::Mat& depth)
+void PointCloudMapping::insertKeyFrame(KeyFrame *kf, cv::Mat &color, cv::Mat &depth)
 {
-    cout<<"receive a keyframe, id = "<<kf->mnId<<endl;
-    unique_lock<mutex> lck(keyframeMutex);
-    keyframes.push_back( kf );
-    colorImgs.push_back( color.clone() );
-    depthImgs.push_back( depth.clone() );
-    
+    cout << "receive a keyframe, id = " << kf->mnId << endl;
+    unique_lock <mutex> lck(keyframeMutex);
+    keyframes.push_back(kf);
+    colorImgs.push_back(color.clone());
+    depthImgs.push_back(depth.clone());
+
     keyFrameUpdated.notify_one();
 }
 
-pcl::PointCloud< PointCloudMapping::PointT >::Ptr PointCloudMapping::generatePointCloud(KeyFrame* kf, cv::Mat& color, cv::Mat& depth, OcTree* tree)
+
+void PointCloudMapping::generatePointCloud(KeyFrame *kf, cv::Mat &color, cv::Mat &depth, OcTree *tree)
 {
     // point cloud is null ptr
     int maxd = 0;
     int size = 0;
-    for ( int m=0; m<depth.rows; m+=3 )
+    for (int m = 0; m < depth.rows; m += 3)
     {
-        for ( int n=0; n<depth.cols; n+=3 )
+        for (int n = 0; n < depth.cols; n += 3)
         {
             float d = depth.ptr<float>(m)[n];
-	    if(d > maxd) maxd = d;
+            if (d > maxd) maxd = d;
             //if (d < 0.01 || d>1)
             //    continue;
             PointT p;
             p.z = d;
-            p.x = ( n - kf->cx) * p.z / kf->fx;
-            p.y = ( m - kf->cy) * p.z / kf->fy;
-            
-            p.b = color.ptr<uchar>(m)[n*3];
-            p.g = color.ptr<uchar>(m)[n*3+1];
-            p.r = color.ptr<uchar>(m)[n*3+2];
-                
-	    size++;
-	    
-            point3d endpoint (p.x, p.y, p.z);
-	    tree->updateNode(endpoint, true); // integrate 'occupied' measurement
+            p.x = (n - kf->cx) * p.z / kf->fx;
+            p.y = (m - kf->cy) * p.z / kf->fy;
+
+            p.b = color.ptr<uchar>(m)[n * 3];
+            p.g = color.ptr<uchar>(m)[n * 3 + 1];
+            p.r = color.ptr<uchar>(m)[n * 3 + 2];
+
+            size++;
+
+            point3d endpoint(p.x, p.y, p.z);
+            tree->updateNode(endpoint, true); // integrate 'occupied' measurement
         }
     }
-    cout<<"generate point cloud for kf "<<kf->mnId<<", size="<< size << " with maxd = " << maxd <<endl;
+    cout << "generate point cloud for kf " << kf->mnId << ", size=" << size << " with maxd = " << maxd << endl;
 }
 
-
-void PointCloudMapping::viewer()
-{
-    while(1)
-    {
-        {
-            unique_lock<mutex> lck_shutdown( shutDownMutex );
-            if (shutDownFlag)
-            {
-                break;
-            }
-        }
-        {
-            unique_lock<mutex> lck_keyframeUpdated( keyFrameUpdateMutex );
-            keyFrameUpdated.wait( lck_keyframeUpdated );
-        }
-    }
-}
 
