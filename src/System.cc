@@ -274,11 +274,15 @@ void System::Shutdown()
     mpLoopCloser->RequestFinish();
     mpViewer->RequestFinish();
     mpPointCloudMapping->shutdown();
-
+    cout << "shutdown functions out" << endl;
     // Wait until all thread have effectively stopped
     while(!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished()  ||
           !mpViewer->isFinished()      || mpLoopCloser->isRunningGBA())
     {
+	cout << "!mpLocalMapper->isFinished(): " << !mpLocalMapper->isFinished() << endl;
+	cout << "!mpLoopCloser->isFinished(): " << !mpLoopCloser->isFinished() << endl;
+	cout << "!mpViewer->isFinished(): " << !mpViewer->isFinished() << endl;
+	cout << "mpLoopCloser->isRunningGBA(): " << mpLoopCloser->isRunningGBA() << endl;
         usleep(5000);
     }
 

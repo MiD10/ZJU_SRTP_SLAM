@@ -66,7 +66,7 @@ void PointCloudMapping::insertKeyFrame(KeyFrame *kf, cv::Mat &color, cv::Mat &de
 }
 
 
-void PointCloudMapping::generatePointCloud(KeyFrame *kf, cv::Mat &color, cv::Mat &depth, OcTree *tree)
+pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePointCloud(KeyFrame *kf, cv::Mat &color, cv::Mat &depth, OcTree *tree)
 {
     // point cloud is null ptr
     int maxd = 0;

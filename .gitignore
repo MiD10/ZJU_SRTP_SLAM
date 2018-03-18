@@ -1,10 +1,10 @@
 ##ignore this file##
 build/
 /Vocabulary/
-/Examples/RGB-D/rgbd_dataset_freiburg1_xyz/
-/Examples/RGB-D/associations/
+/Examples/
 *.pcd
 *.tgz
 *.cmake
 *.log
+*.bt
 cmake-build-debug/

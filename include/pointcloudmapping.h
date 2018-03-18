@@ -46,7 +46,7 @@ public:
     void viewer();
     
 protected:
-    PointCloud::Ptr generatePointCloud(KeyFrame* kf, cv::Mat& color, cv::Mat& depth, OcTree* tree);
+    pcl::PointCloud<PointCloudMapping::PointT>::Ptr generatePointCloud(KeyFrame* kf, cv::Mat& color, cv::Mat& depth, OcTree* tree);
     
     PointCloud::Ptr globalMap;
     shared_ptr<thread>  viewerThread;   
