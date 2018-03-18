@@ -43,6 +43,7 @@ void PointCloudMapping::shutdown()
 	  std::cout << "keyframe " << i << "..." << std::endl;
 	  PointCloud::Ptr tp = generatePointCloud(keyframes[i],colorImgs[i],depthImgs[i],&tree);
 	}
+	tree.updateInnerOccupancy();
 	tree.writeBinary("simple_tree.bt");
 	std::cout << "wrote example file simple_tree.bt" << std::endl << std::endl;
 	std::cout << "now you can use octovis to visualize: octovis simple_tree.bt"  << std::endl;
