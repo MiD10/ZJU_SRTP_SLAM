@@ -37,7 +37,7 @@ void PointCloudMapping::shutdown()
 {
     std::cout << "Save point cloud file successfully!" << std::endl;
     {
-        unique_lock <mutex> lck(shutDownMutex);
+        // unique_lock <mutex> lck(shutDownMutex);
         OcTree tree(0.1);  // create empty tree with resolution 0.1
         for (size_t i = 0; i < keyframes.size(); i++)
         {
@@ -48,8 +48,8 @@ void PointCloudMapping::shutdown()
         tree.writeBinary("simple_tree.bt");
         std::cout << "wrote example file simple_tree.bt" << std::endl << std::endl;
         std::cout << "now you can use octovis to visualize: octovis simple_tree.bt" << std::endl;
-        shutDownFlag = true;
-        keyFrameUpdated.notify_one();
+        // shutDownFlag = true;
+        // keyFrameUpdated.notify_one();
     }
     // viewerThread->join();
 }
@@ -57,12 +57,12 @@ void PointCloudMapping::shutdown()
 void PointCloudMapping::insertKeyFrame(KeyFrame *kf, cv::Mat &color, cv::Mat &depth)
 {
     cout << "receive a keyframe, id = " << kf->mnId << endl;
-    unique_lock <mutex> lck(keyframeMutex);
+    // unique_lock <mutex> lck(keyframeMutex);
     keyframes.push_back(kf);
     colorImgs.push_back(color.clone());
     depthImgs.push_back(depth.clone());
 
-    keyFrameUpdated.notify_one();
+    // keyFrameUpdated.notify_one();
 }
 
 

@@ -49,19 +49,19 @@ protected:
     pcl::PointCloud<PointCloudMapping::PointT>::Ptr generatePointCloud(KeyFrame* kf, cv::Mat& color, cv::Mat& depth, OcTree* tree);
     
     PointCloud::Ptr globalMap;
-    shared_ptr<thread>  viewerThread;   
+    // shared_ptr<thread>  viewerThread;
     
-    bool    shutDownFlag    =false;
-    mutex   shutDownMutex;  
+    // bool    shutDownFlag    =false;
+    // mutex   shutDownMutex;
     
-    condition_variable  keyFrameUpdated;
-    mutex               keyFrameUpdateMutex;
+    // condition_variable  keyFrameUpdated;
+    // mutex               keyFrameUpdateMutex;
     
     // data to generate point clouds
     vector<KeyFrame*>       keyframes;
     vector<cv::Mat>         colorImgs;
     vector<cv::Mat>         depthImgs;
-    mutex                   keyframeMutex;
+    // mutex                   keyframeMutex;
     uint16_t                lastKeyframeSize =0;
     
     double resolution = 0.04;
