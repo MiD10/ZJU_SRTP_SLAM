@@ -38,18 +38,6 @@ void PointCloudMapping::shutdown()
     std::cout << "Save point cloud file successfully!" << std::endl;
     {
         unique_lock<mutex> lck(shutDownMutex);
-	globalMap->clear();
-	for(size_t i = 0; i < keyframes.size(); i++)
-	{
-	  std::cout << "keyframe " << i << "..." << std::endl;
-	  PointCloud::Ptr tp = generatePointCloud(keyframes[i],colorImgs[i],depthImgs[i]);
-	  *globalMap += *tp;
-	}
-	PointCloud::Ptr tmp(new PointCloud());
-	voxel.setInputCloud( globalMap );
-	voxel.filter( *tmp );
-	globalMap->swap( *tmp );
-	pcl::io::savePCDFileBinary( "optimized_pointcloud.pcd", *globalMap);
         shutDownFlag = true;
         keyFrameUpdated.notify_one();
     }
@@ -140,5 +128,6 @@ void PointCloudMapping::viewer()
         cout<<"show global map, size="<<globalMap->points.size()<<endl;
         lastKeyframeSize = N;
     }
+    pcl::io::savePCDFileBinary( "optimized_pointcloud.pcd", *globalMap);
 }
 
