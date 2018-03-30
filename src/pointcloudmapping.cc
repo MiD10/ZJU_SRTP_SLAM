@@ -23,6 +23,9 @@
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/io/pcd_io.h>
 #include "Converter.h"
+#include <octomap/octomap.h>
+#include <octomap/ColorOcTree.h>
+#include <octomap/math/Pose6D.h>
 
 PointCloudMapping::PointCloudMapping(double resolution_):tree(resolution_)
 {

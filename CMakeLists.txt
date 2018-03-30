@@ -35,7 +35,8 @@ find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 find_package( G2O REQUIRED )
 find_package( PCL 1.7 REQUIRED )
-
+FIND_PACKAGE( octomap REQUIRED )
+INCLUDE_DIRECTORIES( ${OCTOMAP_INCLUDE_DIRS} )
 include_directories(
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/include
