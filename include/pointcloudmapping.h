@@ -26,6 +26,9 @@
 #include <pcl/point_types.h>
 #include <pcl/filters/voxel_grid.h>
 #include <condition_variable>
+#include <octomap/octomap.h>
+#include <octomap/ColorOcTree.h>
+#include <octomap/math/Pose6D.h>
 
 using namespace ORB_SLAM2;
 
