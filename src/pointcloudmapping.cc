@@ -69,7 +69,7 @@ pcl::PointCloud< PointCloudMapping::PointT >::Ptr PointCloudMapping::generatePoi
         {
             float d = depth.ptr<float>(m)[n];
 	    if(d > maxd) maxd = d;
-            if (d < 0.01 || d>1)
+            if (d < 0.01 || d>4)
                 continue;
             PointT p;
             p.z = d;
