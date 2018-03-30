@@ -63,6 +63,8 @@ protected:
     
     double resolution = 0.04;
     pcl::VoxelGrid<PointT>  voxel;
+
+    octomap::OcTree tree;
 };
 
 #endif // POINTCLOUDMAPPING_H

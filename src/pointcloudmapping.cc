@@ -24,7 +24,7 @@
 #include <pcl/io/pcd_io.h>
 #include "Converter.h"
 
-PointCloudMapping::PointCloudMapping(double resolution_)
+PointCloudMapping::PointCloudMapping(double resolution_):tree(resolution_)
 {
     this->resolution = resolution_;
     voxel.setLeafSize( resolution, resolution, resolution);
@@ -85,7 +85,16 @@ pcl::PointCloud< PointCloudMapping::PointT >::Ptr PointCloudMapping::generatePoi
     PointCloud::Ptr cloud(new PointCloud);
     pcl::transformPointCloud( *tmp, *cloud, T.inverse().matrix());
     cloud->is_dense = false;
-    
+
+    for (auto p:cloud->points)
+    {
+        // 将点云里的点插入到octomap中
+        tree.updateNode( octomap::point3d(p.x, p.y, p.z), true );
+    }
+
+    // 更新octomap
+    tree.updateInnerOccupancy();
+
     cout<<"generate point cloud for kf "<<kf->mnId<<", size="<<cloud->points.size()<< " with maxd = " << maxd <<endl;
     return cloud;
 }
@@ -128,6 +137,10 @@ void PointCloudMapping::viewer()
         cout<<"show global map, size="<<globalMap->points.size()<<endl;
         lastKeyframeSize = N;
     }
+    // 存储octomap
+    tree.writeBinary( "global-octotree.bt" );
     pcl::io::savePCDFileBinary( "optimized_pointcloud.pcd", *globalMap);
+
+
 }
 
