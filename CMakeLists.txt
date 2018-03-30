@@ -88,11 +88,11 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/RGB-D)
 
 add_executable(rgbd_tum
 Examples/RGB-D/rgbd_tum.cc)
-target_link_libraries(rgbd_tum ${PROJECT_NAME})
+target_link_libraries(rgbd_tum ${PROJECT_NAME} ${OCTOMAP_LIBRARIES})
 
 add_executable(rgbd_my
 Examples/RGB-D/rgbd_my.cc)
-target_link_libraries(rgbd_my ${PROJECT_NAME})
+target_link_libraries(rgbd_my ${PROJECT_NAME} ${OCTOMAP_LIBRARIES})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/Stereo)
 
